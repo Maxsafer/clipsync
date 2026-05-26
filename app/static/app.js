@@ -14,6 +14,45 @@ async function apiJSON(path, opts = {}) {
   return { res, body };
 }
 
+// --- modal -----------------------------------------------------------------
+
+function confirmDialog(message, opts = {}) {
+  const { confirmText = 'Confirm', cancelText = 'Cancel', danger = true } = opts;
+  return new Promise((resolve) => {
+    const dialog = document.getElementById('modal');
+    dialog.querySelector('[data-role=message]').textContent = message;
+    const confirmBtn = dialog.querySelector('[data-role=confirm]');
+    const cancelBtn = dialog.querySelector('[data-role=cancel]');
+    confirmBtn.textContent = confirmText;
+    cancelBtn.textContent = cancelText;
+    confirmBtn.classList.toggle('danger', danger);
+
+    const onConfirm = () => { dialog.returnValue = 'confirm'; dialog.close(); };
+    const onCancel = () => { dialog.returnValue = 'cancel'; dialog.close(); };
+    const onBackdrop = (e) => {
+      const r = dialog.getBoundingClientRect();
+      const inside = e.clientX >= r.left && e.clientX <= r.right
+                  && e.clientY >= r.top && e.clientY <= r.bottom;
+      if (!inside) { dialog.returnValue = 'cancel'; dialog.close(); }
+    };
+    const onClose = () => {
+      confirmBtn.removeEventListener('click', onConfirm);
+      cancelBtn.removeEventListener('click', onCancel);
+      dialog.removeEventListener('click', onBackdrop);
+      dialog.removeEventListener('close', onClose);
+      resolve(dialog.returnValue === 'confirm');
+    };
+
+    confirmBtn.addEventListener('click', onConfirm);
+    cancelBtn.addEventListener('click', onCancel);
+    dialog.addEventListener('click', onBackdrop);
+    dialog.addEventListener('close', onClose);
+    dialog.returnValue = 'cancel';   // default on ESC / backdrop
+    dialog.showModal();
+    cancelBtn.focus();               // safer default than auto-focusing the destructive action
+  });
+}
+
 // --- theme -----------------------------------------------------------------
 
 (function initTheme() {
@@ -103,6 +142,23 @@ function highlightNav() {
 
 let clipsCache = [];
 
+// Attached once at module load — re-running renderClips() must not stack
+// duplicate paste handlers (caused double-upload).
+document.addEventListener('paste', async (e) => {
+  if (location.hash && location.hash !== '#/clips') return;
+  const status = document.getElementById('push-status');
+  if (!status) return;
+  const items = e.clipboardData.items;
+  for (const item of items) {
+    if (item.kind === 'file') {
+      await uploadFile(item.getAsFile(), status);
+      return;
+    }
+  }
+  const text = e.clipboardData.getData('text/plain');
+  if (text) await pushTextValue(text, status);
+});
+
 function renderClips() {
   const view = document.getElementById('view');
   view.replaceChildren(document.getElementById('tpl-clips').content.cloneNode(true));
@@ -121,18 +177,6 @@ function renderClips() {
     zone.classList.remove('drag');
     if (e.dataTransfer.files.length) await uploadFile(e.dataTransfer.files[0], status);
   });
-  document.addEventListener('paste', async (e) => {
-    if (location.hash && location.hash !== '#/clips') return;
-    const items = e.clipboardData.items;
-    for (const item of items) {
-      if (item.kind === 'file') {
-        await uploadFile(item.getAsFile(), status);
-        return;
-      }
-    }
-    const text = e.clipboardData.getData('text/plain');
-    if (text) await pushTextValue(text, status);
-  });
   fileInput.addEventListener('change', async () => {
     if (fileInput.files.length) await uploadFile(fileInput.files[0], status);
     fileInput.value = '';
@@ -144,7 +188,7 @@ function renderClips() {
     textInput.value = '';
   });
   clearAll.addEventListener('click', async () => {
-    if (!confirm('Delete every clip?')) return;
+    if (!await confirmDialog('Delete every clip? This cannot be undone.', { confirmText: 'Delete all' })) return;
     await api('/api/clips', { method: 'DELETE' });
   });
 
@@ -236,7 +280,7 @@ function buildRow(clip) {
   li.querySelector('[data-action=copy]').addEventListener('click', () => copyToClipboard(clip));
   li.querySelector('[data-action=download]').addEventListener('click', () => downloadClip(clip));
   li.querySelector('[data-action=delete]').addEventListener('click', async () => {
-    if (!confirm('Delete this clip?')) return;
+    if (!await confirmDialog('Delete this clip?', { confirmText: 'Delete' })) return;
     await api(`/api/clip/${clip.id}`, { method: 'DELETE' });
   });
   return li;
@@ -418,7 +462,7 @@ async function renderSettings() {
     await navigator.clipboard.writeText(tokenInput.value);
   });
   document.getElementById('regenerate-token').addEventListener('click', async () => {
-    if (!confirm('Regenerate token? Existing scripts will need updating.')) return;
+    if (!await confirmDialog('Regenerate token? Existing scripts will need updating.', { confirmText: 'Regenerate' })) return;
     const { body } = await apiJSON('/api/auth/rotate-token', { method: 'POST' });
     tokenInput.value = (body && body.api_token) || '';
     updateCurlExamples(tokenInput.value);

@@ -4,10 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>clipsync</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div id="app"></div>
+
+  <footer class="site-footer">
+    <a href="https://github.com/Maxsafer/clipsync" target="_blank" rel="noopener noreferrer">
+      clipsync · github.com/Maxsafer/clipsync
+    </a>
+  </footer>
+
+  <dialog id="modal" aria-labelledby="modal-message">
+    <p id="modal-message" data-role="message"></p>
+    <div class="modal-actions">
+      <button type="button" data-role="cancel">Cancel</button>
+      <button type="button" data-role="confirm" class="danger">Confirm</button>
+    </div>
+  </dialog>
 
   <template id="tpl-login">
     <main class="login">

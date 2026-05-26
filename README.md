@@ -289,6 +289,55 @@ Practical guidance:
 - **Hosting on `http://localhost`** counts as a secure context too, so local
   development gets the full experience.
 
+## Claude Code skill
+
+A bundled skill at [`claude/skills/clipsync/SKILL.md`](claude/skills/clipsync/SKILL.md)
+lets Claude Code drive your clipsync instance with natural language —
+"read the last image", "show me the latest clip", "push this to clipsync",
+"give me the last 3 image clips", etc.
+
+### Install
+
+```bash
+# from the repo root
+mkdir -p ~/.claude/skills
+cp -r claude/skills/clipsync ~/.claude/skills/
+```
+
+### Configure
+
+The skill reads two environment variables from your shell. Add them to your
+`~/.bashrc` or `~/.zshrc`:
+
+```bash
+export CLIPSYNC_BASE="https://your-clipsync-host"     # no trailing slash
+export CLIPSYNC_TOKEN="paste-the-token-from-settings"
+```
+
+Open a new shell (or `source` your rc file) so Claude Code inherits the env.
+
+### Use
+
+Just ask Claude Code in natural language. Examples that auto-trigger the
+skill:
+
+- "read the last clipsync clip"
+- "show me the latest image from clipsync"
+- "fetch the last 3 image clips and describe them"
+- "push the output of `gcc -v` to clipsync"
+- "what's the device label on the most recent clip?"
+
+Behind the scenes Claude runs `curl` against your `CLIPSYNC_BASE` with the
+bearer token, saves images to `/tmp/` with proper extensions so they render
+visually, and parses metadata with `jq`.
+
+### Security note
+
+Never commit `CLIPSYNC_TOKEN` to a project. The skill is designed to pull it
+from your shell env at request time — that way the token stays in your
+machine's secrets, not in any repo or chat transcript. If you accidentally
+expose the token, rotate it from the Settings tab.
+
 ## Backup and upgrades
 
 Everything stateful lives in `./data` (SQLite + blob files). Back it up with
@@ -325,6 +374,7 @@ CLIPSYNC_SECRET_KEY=dev CLIPSYNC_USERNAME=alice CLIPSYNC_PASSWORD=alice1234 \
 clipsync/
 ├── Dockerfile
 ├── docker-compose.yml
+├── docker-entrypoint.sh
 ├── requirements.txt
 ├── app/
 │   ├── __init__.py          # Flask app factory + TTL daemon
@@ -336,6 +386,8 @@ clipsync/
 │   ├── settings.py          # /api/settings
 │   ├── events.py            # SSE pubsub broker
 │   └── static/              # vanilla JS web UI
+├── claude/
+│   └── skills/clipsync/     # Claude Code skill (see above)
 └── tests/
 ```
 

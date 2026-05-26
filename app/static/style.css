@@ -122,3 +122,30 @@ pre#curl-examples {
 #push-status, #settings-status, #password-status {
   margin-left: 0.5rem; color: var(--muted);
 }
+
+.site-footer {
+  text-align: center;
+  padding: 1.25rem 1rem 2rem;
+  font-size: 0.85em;
+  color: var(--muted);
+}
+.site-footer a { color: var(--muted); text-decoration: none; }
+.site-footer a:hover { color: var(--accent); text-decoration: underline; }
+
+dialog#modal {
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  max-width: 420px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+dialog#modal::backdrop {
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(3px);
+}
+dialog#modal p { margin: 0 0 1rem; }
+dialog#modal .modal-actions {
+  display: flex; justify-content: flex-end; gap: 0.5rem;
+}
