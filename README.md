@@ -303,6 +303,8 @@ lets Claude Code drive your clipsync instance with natural language —
 "read the last image", "show me the latest clip", "push this to clipsync",
 "give me the last 3 image clips", etc.
 
+![Claude Code reading clips from clipsync](docs/claude-skill-demo.png)
+
 ### Install
 
 ```bash
