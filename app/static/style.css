@@ -1,0 +1,124 @@
+:root {
+  --bg: #14171c;
+  --panel: #1c2026;
+  --panel-2: #232830;
+  --fg: #e6e9ef;
+  --muted: #8a92a3;
+  --accent: #4f9eff;
+  --danger: #e2615b;
+  --border: #2c323b;
+}
+:root[data-theme="light"] {
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+  --panel-2: #f0f2f6;
+  --fg: #1a1d23;
+  --muted: #5d6470;
+  --accent: #2467d4;
+  --danger: #c4392f;
+  --border: #d8dce4;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+header .brand { font-weight: 600; letter-spacing: 0.02em; }
+header nav { flex: 1; display: flex; gap: 1rem; }
+header nav a {
+  color: var(--muted); text-decoration: none; padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+header nav a.active { color: var(--fg); background: var(--panel-2); }
+header .actions { display: flex; gap: 0.5rem; }
+
+main {
+  max-width: 880px; margin: 0 auto; padding: 1.5rem 1.25rem;
+}
+
+button {
+  background: var(--panel-2); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.4rem 0.8rem; cursor: pointer; font: inherit;
+}
+button:hover { background: var(--border); }
+button.danger { color: var(--danger); border-color: var(--danger); }
+button.danger:hover { background: var(--danger); color: #fff; }
+
+input, textarea {
+  background: var(--panel); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 0.4rem 0.6rem; font: inherit;
+}
+input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+label { display: block; margin: 0.6rem 0; }
+label.row { display: flex; align-items: center; gap: 0.5rem; }
+
+.error { color: var(--danger); }
+
+.paste-zone {
+  border: 2px dashed var(--border); border-radius: 6px;
+  padding: 1rem; background: var(--panel); margin-bottom: 1.5rem;
+}
+.paste-zone.drag { border-color: var(--accent); background: var(--panel-2); }
+.paste-zone textarea { width: 100%; min-height: 100px; }
+.file-pick { display: inline; color: var(--accent); cursor: pointer; text-decoration: underline; margin: 0; }
+
+.clip-list h2 { display: flex; align-items: center; justify-content: space-between; }
+#clips { list-style: none; padding: 0; margin: 0; }
+.clip {
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  padding: 0.75rem; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+.clip .icon {
+  width: 48px; height: 48px; border-radius: 4px;
+  background: var(--panel-2); display: grid; place-items: center;
+  font-size: 1.4rem; color: var(--muted); flex-shrink: 0;
+  overflow: hidden;
+}
+.clip .icon img { width: 100%; height: 100%; object-fit: cover; }
+.clip .body { flex: 1; min-width: 0; }
+.clip .preview {
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 4.5em; overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.clip .meta { color: var(--muted); font-size: 0.85em; margin-top: 0.25rem; }
+.clip .row-actions { display: flex; gap: 0.25rem; flex-shrink: 0; }
+.clip .row-actions button { padding: 0.25rem 0.5rem; }
+
+.settings h2 { margin-top: 2rem; }
+.settings .hint { color: var(--muted); }
+.token-row { display: flex; gap: 0.5rem; }
+.token-row input { flex: 1; font-family: ui-monospace, monospace; }
+
+pre#curl-examples {
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 0.75rem; border-radius: 4px; overflow-x: auto;
+  font-size: 0.85em;
+}
+
+.login {
+  max-width: 360px; margin: 4rem auto; padding: 1.5rem;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+}
+.login h1 { margin-top: 0; }
+.login button { width: 100%; margin-top: 0.5rem; }
+
+#push-status, #settings-status, #password-status {
+  margin-left: 0.5rem; color: var(--muted);
+}

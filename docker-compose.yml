@@ -1,0 +1,15 @@
+services:
+  clipsync:
+    build: .
+    image: clipsync:latest
+    container_name: clipsync
+    restart: unless-stopped
+    ports:
+      - "${CLIPSYNC_PORT:-8080}:${CLIPSYNC_PORT:-8080}"
+    volumes:
+      - ./data:/data
+    environment:
+      CLIPSYNC_PORT: ${CLIPSYNC_PORT:-8080}
+      CLIPSYNC_USERNAME: ${CLIPSYNC_USERNAME:-admin}
+      CLIPSYNC_PASSWORD: ${CLIPSYNC_PASSWORD:?set CLIPSYNC_PASSWORD in .env for first run}
+      CLIPSYNC_SECRET_KEY: ${CLIPSYNC_SECRET_KEY:?set CLIPSYNC_SECRET_KEY in .env}

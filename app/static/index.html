@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>clipsync</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <template id="tpl-login">
+    <main class="login">
+      <form id="login-form">
+        <h1>clipsync</h1>
+        <label>Username <input name="username" autocomplete="username" required></label>
+        <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+        <label class="row"><input name="remember" type="checkbox"> Remember me</label>
+        <button type="submit">Sign in</button>
+        <p class="error" data-role="error" hidden></p>
+      </form>
+    </main>
+  </template>
+
+  <template id="tpl-shell">
+    <header>
+      <div class="brand">clipsync</div>
+      <nav>
+        <a href="#/clips" data-tab="clips">Clipboard</a>
+        <a href="#/settings" data-tab="settings">Settings</a>
+      </nav>
+      <div class="actions">
+        <button id="theme-toggle" title="Toggle theme">◐</button>
+        <button id="logout">Logout</button>
+      </div>
+    </header>
+    <main id="view"></main>
+  </template>
+
+  <template id="tpl-clips">
+    <section class="paste-zone" id="paste-zone" tabindex="0">
+      <p>Paste (Ctrl/Cmd+V), drop a file here, or <label for="file-input" class="file-pick">choose a file</label>.</p>
+      <input type="file" id="file-input" hidden>
+      <p><textarea id="text-input" placeholder="…or type/paste text here, then press Push"></textarea></p>
+      <p><button id="push-text">Push text</button> <span id="push-status"></span></p>
+    </section>
+    <section class="clip-list">
+      <h2>Recent clips <button id="clear-all" class="danger">Clear all</button></h2>
+      <p id="http-image-hint" class="hint" hidden>
+        Tip: the copy button for images needs HTTPS. Over HTTP you can still
+        right-click the image thumbnail and choose <em>Copy image</em>.
+      </p>
+      <ul id="clips"></ul>
+      <p id="empty" hidden>No clips yet.</p>
+    </section>
+  </template>
+
+  <template id="tpl-settings">
+    <section class="settings">
+      <h2>Settings</h2>
+      <form id="settings-form">
+        <label>History size (items)
+          <input type="number" name="history_size" min="1">
+        </label>
+        <label>Item TTL (hours, 0 = never expire)
+          <input type="number" name="item_ttl_hours" min="0">
+        </label>
+        <label>Max item size (MB, 0 = unlimited)
+          <input type="number" name="max_item_size_mb" min="0">
+        </label>
+        <button type="submit">Save</button>
+        <span id="settings-status"></span>
+      </form>
+
+      <h2>API token</h2>
+      <p class="hint">Use this with <code>Authorization: Bearer &lt;token&gt;</code> or <code>?token=...</code> in a URL.</p>
+      <div class="token-row">
+        <input id="api-token" readonly>
+        <button id="copy-token">Copy</button>
+        <button id="regenerate-token" class="danger">Regenerate</button>
+      </div>
+
+      <h2>Change password</h2>
+      <form id="password-form">
+        <label>Current password <input type="password" name="current" autocomplete="current-password" required></label>
+        <label>New password (≥ 8 chars) <input type="password" name="new" autocomplete="new-password" minlength="8" required></label>
+        <button type="submit">Change password</button>
+        <span id="password-status"></span>
+      </form>
+
+      <h2>curl examples</h2>
+      <pre id="curl-examples"></pre>
+    </section>
+  </template>
+
+  <template id="tpl-clip-row">
+    <li class="clip">
+      <div class="icon" data-role="icon"></div>
+      <div class="body">
+        <div class="preview" data-role="preview"></div>
+        <div class="meta">
+          <span data-role="device"></span> ·
+          <span data-role="ago"></span> ·
+          <span data-role="size"></span>
+        </div>
+      </div>
+      <div class="row-actions">
+        <button data-action="copy" title="Copy to clipboard">⧉</button>
+        <button data-action="download" title="Download">⬇</button>
+        <button data-action="delete" class="danger" title="Delete">✕</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="/app.js"></script>
+</body>
+</html>

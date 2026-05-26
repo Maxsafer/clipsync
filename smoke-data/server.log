@@ -1,0 +1,7 @@
+[2026-05-25 21:15:50 -0600] [848594] [INFO] Starting gunicorn 23.0.0
+[2026-05-25 21:15:50 -0600] [848594] [INFO] Listening at: http://127.0.0.1:18080 (848594)
+[2026-05-25 21:15:50 -0600] [848594] [INFO] Using worker: gthread
+[2026-05-25 21:15:50 -0600] [848614] [INFO] Booting worker with pid: 848614
+[2026-05-25 21:15:52 -0600] [848594] [INFO] Handling signal: term
+[2026-05-25 21:15:53 -0600] [848614] [INFO] Worker exiting (pid: 848614)
+[2026-05-25 21:15:53 -0600] [848594] [INFO] Shutting down: Master
