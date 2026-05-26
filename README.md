@@ -21,7 +21,7 @@ sed "s|^CLIPSYNC_SECRET_KEY=.*|CLIPSYNC_SECRET_KEY=$(openssl rand -hex 32)|" \
     .env.example > .env
 
 # Edit CLIPSYNC_USERNAME and CLIPSYNC_PASSWORD before the first start
-$EDITOR .env
+vim .env
 
 docker compose up -d --build
 open http://localhost:8080   # or your-host:8080
@@ -339,6 +339,6 @@ clipsync/
 └── tests/
 ```
 
-## What's not in here (intentionally)
+## What's not in scope of this project
 
 Pinning, favorites, search, multi-user, sharing, WebSockets, migrations.
