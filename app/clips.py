@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import mimetypes
+import time
 import uuid
 from typing import BinaryIO
 
@@ -92,10 +93,6 @@ def push_clip():
                 # Buffer once so we know the size when no Content-Length is given.
                 src = io.BytesIO(request.get_data(cache=False))
             clip_id, size, type_, preview = _ingest_stream(src, mime, filename)
-            if type_ == "file" and not filename:
-                # Provide a reasonable default filename from extension if known.
-                ext = mimetypes.guess_extension(mime) or ".bin"
-                filename = f"clip-{clip_id[:8]}{ext}"
     except storage.SizeExceeded as e:
         return jsonify({"error": str(e)}), 413
 
@@ -135,6 +132,27 @@ def list_clips():
     return jsonify(db.list_clips(conn, limit))
 
 
+_MIME_EXT_OVERRIDES = {
+    "image/jpeg": ".jpg",
+    "text/plain": ".txt",
+    "application/octet-stream": ".bin",
+}
+
+
+def _download_name(clip: dict, mime: str) -> str:
+    # Include a request-time UTC timestamp with ms precision so repeated fetches
+    # of the same clip produce distinct filenames — `curl -OJ` on older curl
+    # refuses to overwrite, and back-to-back calls land in the same second.
+    now = time.time()
+    stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime(now)) + f"{int((now % 1) * 1000):03d}Z"
+    if clip["filename"]:
+        base = clip["filename"].rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+        if base:
+            return f"clip-{clip['id'][:8]}-{stamp}-{base}"
+    ext = _MIME_EXT_OVERRIDES.get(mime) or mimetypes.guess_extension(mime) or ".bin"
+    return f"clip-{clip['id'][:8]}-{stamp}{ext}"
+
+
 def _send_clip(clip: dict, *, force_mime: str | None = None, as_attachment: bool | None = None) -> Response:
     blobs_dir = current_app.config["CLIPSYNC_BLOBS_DIR"]
     path = storage.blob_path(blobs_dir, clip["id"])
@@ -145,7 +163,7 @@ def _send_clip(clip: dict, *, force_mime: str | None = None, as_attachment: bool
         path,
         mimetype=mime,
         as_attachment=as_attachment,
-        download_name=clip["filename"] or clip["id"],
+        download_name=_download_name(clip, mime),
         conditional=True,
     )
 

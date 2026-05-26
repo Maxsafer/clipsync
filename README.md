@@ -147,22 +147,29 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ### Pull
 
-```bash
-# Latest clip's raw bytes with the original Content-Type
-curl -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clip/latest
+Every blob response carries a `Content-Disposition` header with a unique
+filename of the form `clip-<id8>-<UTC-timestamp-ms>[-<original-name>].<ext>`,
+so `curl -OJ` saves with the right extension and never collides with a prior
+download — no manual `-o` rename, no `--clobber`.
 
-# Latest clip forced as text/plain (errors if latest isn't text)
+```bash
+# Latest clip — saved as e.g. /tmp/clip-7f736248-20260526T194152123Z-image.png
+cd /tmp && curl -OJ -H "Authorization: Bearer $TOKEN" \
+                http://your-host:8080/api/clip/latest
+
+# Pipe latest text straight to stdout (errors if latest isn't text)
 curl -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clip/latest.txt
 
 # Latest as application/octet-stream
 curl -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clip/latest.bin
 
-# Metadata list
+# Metadata list (JSON, no blobs)
 curl -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clips?limit=20
 
 # A specific clip
-curl -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clip/<id>
-curl -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clip/<id>/meta
+cd /tmp && curl -OJ -H "Authorization: Bearer $TOKEN" \
+                http://your-host:8080/api/clip/<id>
+curl       -H "Authorization: Bearer $TOKEN" http://your-host:8080/api/clip/<id>/meta
 ```
 
 ### Manage
@@ -327,9 +334,11 @@ skill:
 - "push the output of `gcc -v` to clipsync"
 - "what's the device label on the most recent clip?"
 
-Behind the scenes Claude runs `curl` against your `CLIPSYNC_BASE` with the
-bearer token, saves images to `/tmp/` with proper extensions so they render
-visually, and parses metadata with `jq`.
+Behind the scenes Claude runs `curl -OJ` against your `CLIPSYNC_BASE` with
+the bearer token. The server emits a `Content-Disposition` filename like
+`clip-<id8>-<UTC-ms>[-<original>].<ext>`, so each download lands in `/tmp/`
+with the right extension (and renders visually when Claude Reads it) without
+a rename dance. Metadata is parsed with `jq`.
 
 ### Security note
 

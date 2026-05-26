@@ -37,11 +37,13 @@ Every request uses the bearer header. For readability define once:
 
 ### Latest clip (raw bytes, original Content-Type)
 
-    curl -fsS "${CS_AUTH[@]}" -o /tmp/clipsync-latest "$CLIPSYNC_BASE/api/clip/latest"
+The server's `Content-Disposition` filename includes a UTC timestamp so each
+fetch is unique — just `cd /tmp` and let `curl -OJ` pick the name:
 
-Check the `Content-Type` to know what you got back. For text, just read it.
-For images, rename to `/tmp/clipsync-latest.png` (or `.jpg`, matching the
-mime) so the Read tool renders it visually instead of dumping bytes.
+    cd /tmp && curl -fsS -OJ "${CS_AUTH[@]}" "$CLIPSYNC_BASE/api/clip/latest"
+
+curl prints `curl: Saved to filename 'clip-<id8>-<ts>[-<name>].<ext>'` —
+Read that path.
 
 ### Latest text only
 
@@ -60,29 +62,22 @@ Returns a JSON array, newest first. Each item:
 
 ### Last N images
 
-1. `GET /api/clips?limit=50` and parse with `jq`.
-2. Filter where `type == "image"`, take the first N.
-3. For each, download to `/tmp/clipsync-<id>.<ext>` using the mime
-   (`image/png` → `.png`, `image/jpeg` → `.jpg`, etc.) so Read renders them.
+1. `GET /api/clips?limit=50` and parse with `jq` for `type == "image"`.
+2. Fetch each with `curl -OJ` — server-side timestamps keep names unique.
 
 Example fetching the last 3 images:
 
-    curl -fsS "${CS_AUTH[@]}" "$CLIPSYNC_BASE/api/clips?limit=50" \
-      | jq -r '[.[] | select(.type=="image")] | .[0:3]
-               | .[] | "\(.id) \(.mime)"' \
-      | while read id mime; do
-          ext=$(echo "$mime" | sed 's|image/||; s|jpeg|jpg|')
-          curl -fsS "${CS_AUTH[@]}" -o "/tmp/clipsync-$id.$ext" \
-               "$CLIPSYNC_BASE/api/clip/$id"
-          echo "saved /tmp/clipsync-$id.$ext"
+    cd /tmp && curl -fsS "${CS_AUTH[@]}" "$CLIPSYNC_BASE/api/clips?limit=50" \
+      | jq -r '[.[] | select(.type=="image")] | .[0:3] | .[].id' \
+      | while read id; do
+          curl -fsS -OJ "${CS_AUTH[@]}" "$CLIPSYNC_BASE/api/clip/$id"
         done
 
-Then Read each saved file.
+Then Read each file curl printed.
 
 ### Specific clip by ID
 
-    curl -fsS "${CS_AUTH[@]}" -o /tmp/clipsync-<id>.<ext> \
-         "$CLIPSYNC_BASE/api/clip/<id>"
+    cd /tmp && curl -fsS -OJ "${CS_AUTH[@]}" "$CLIPSYNC_BASE/api/clip/<id>"
 
 Metadata only:
 
@@ -112,10 +107,11 @@ Metadata only:
 
 - Always pass `-fsS` to curl so HTTP errors become non-zero exits and don't
   silently leave partial files on disk.
-- When fetching images for the user to see, save with a real image extension
-  and Read the file — Claude Code renders the image visually that way.
+- For blob downloads use `cd /tmp && curl -OJ` — the server's
+  Content-Disposition includes a UTC timestamp so repeated fetches never
+  collide on disk.
 - When the user says "latest" without specifying type, prefer
-  `/api/clip/latest` (returns the most recent regardless of type) and then
-  branch on the response's Content-Type.
+  `/api/clip/latest` (returns the most recent regardless of type) and Read
+  the saved file — Claude Code renders images visually that way.
 - Use `-H "X-Device-Label: claude-code"` on every push so the user can see in
   the web UI which clips Claude produced.

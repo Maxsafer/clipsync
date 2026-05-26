@@ -30,10 +30,7 @@ function confirmDialog(message, opts = {}) {
     const onConfirm = () => { dialog.returnValue = 'confirm'; dialog.close(); };
     const onCancel = () => { dialog.returnValue = 'cancel'; dialog.close(); };
     const onBackdrop = (e) => {
-      const r = dialog.getBoundingClientRect();
-      const inside = e.clientX >= r.left && e.clientX <= r.right
-                  && e.clientY >= r.top && e.clientY <= r.bottom;
-      if (!inside) { dialog.returnValue = 'cancel'; dialog.close(); }
+      if (e.target === dialog) { dialog.returnValue = 'cancel'; dialog.close(); }
     };
     const onClose = () => {
       confirmBtn.removeEventListener('click', onConfirm);

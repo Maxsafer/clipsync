@@ -179,6 +179,48 @@ def test_sse_emits_clip_new(client, auth_headers, app):
         broker.unsubscribe(q)
 
 
+def test_latest_sets_content_disposition_with_extension(client, auth_headers):
+    import re
+
+    # Filename pattern: clip-<id8>-<timestamp>[-<original>].<ext>
+    # The timestamp guarantees repeated fetches don't collide on the client.
+    ts = r"\d{8}T\d{9}Z"  # YYYYMMDDTHHMMSSmmmZ
+
+    # Text push: no original filename — server synthesizes clip-<id8>-<ts>.txt
+    cid = _push_text(client, auth_headers, "hi").json["id"]
+    r = client.get("/api/clip/latest", headers=auth_headers)
+    cd = r.headers["Content-Disposition"]
+    assert re.search(rf"clip-{cid[:8]}-{ts}\.txt", cd), cd
+
+    # Image upload with original filename — preserved, prefixed, timestamped.
+    png_stub = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
+    img_cid = client.post(
+        "/api/clip",
+        headers=auth_headers,
+        data={"file": (io.BytesIO(png_stub), "shot.png", "image/png")},
+        content_type="multipart/form-data",
+    ).json["id"]
+    r = client.get("/api/clip/latest", headers=auth_headers)
+    cd = r.headers["Content-Disposition"]
+    assert re.search(rf"clip-{img_cid[:8]}-{ts}-shot\.png", cd), cd
+
+    # Image upload with no original filename — clip-<id8>-<ts>.png.
+    cid2 = client.post(
+        "/api/clip",
+        headers={**auth_headers, "Content-Type": "image/png"},
+        data=png_stub,
+    ).json["id"]
+    r = client.get("/api/clip/latest", headers=auth_headers)
+    cd = r.headers["Content-Disposition"]
+    assert re.search(rf"clip-{cid2[:8]}-{ts}\.png", cd), cd
+
+    # Two fetches of the same clip must yield distinct download filenames
+    # (otherwise `curl -OJ` would refuse to overwrite the first download).
+    time.sleep(0.005)
+    r2 = client.get("/api/clip/latest", headers=auth_headers)
+    assert r.headers["Content-Disposition"] != r2.headers["Content-Disposition"]
+
+
 def test_device_label_falls_back(client, auth_headers):
     r = client.post(
         "/api/clip",
