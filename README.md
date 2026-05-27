@@ -30,18 +30,18 @@ open http://localhost:8080   # or your-host:8080
 After first boot, sign in with the username/password you set, then grab your
 API token from the Settings tab.
 
+> The `sed` step is required because plain `cp .env.example .env` leaves
+> `CLIPSYNC_SECRET_KEY=` empty and the container won't start. If you'd rather
+> hand-edit, run `openssl rand -hex 32` separately and paste the output as the
+> value — do **not** write `CLIPSYNC_SECRET_KEY=$(openssl rand -hex 32)` into
+> `.env` by hand, since `.env` files don't evaluate shell substitutions.
+
 ### Desktop shortcuts (optional)
 
 Double-click `open-clipsync-windows.bat` (Windows) or
 `open-clipsync-macos.command` (macOS) to open the app at your current LAN
 IPv4 — so the **Phone access** QR code in the Settings tab is scannable
 from a phone right away.
-
-> The `sed` step is required because plain `cp .env.example .env` leaves
-> `CLIPSYNC_SECRET_KEY=` empty and the container won't start. If you'd rather
-> hand-edit, run `openssl rand -hex 32` separately and paste the output as the
-> value — do **not** write `CLIPSYNC_SECRET_KEY=$(openssl rand -hex 32)` into
-> `.env` by hand, since `.env` files don't evaluate shell substitutions.
 
 ## Environment variables
 
