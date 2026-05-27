@@ -430,6 +430,7 @@ function ensureSSE() {
 async function renderSettings() {
   const view = document.getElementById('view');
   view.replaceChildren(document.getElementById('tpl-settings').content.cloneNode(true));
+  renderPhoneAccess();
   const { body: settings } = await apiJSON('/api/settings');
   const form = document.getElementById('settings-form');
   for (const k of ['history_size', 'item_ttl_hours', 'max_item_size_mb']) {
@@ -479,6 +480,26 @@ async function renderSettings() {
     if (res.ok) pform.reset();
     setTimeout(() => { pstatus.textContent = ''; }, 3000);
   });
+}
+
+function renderPhoneAccess() {
+  const panel = document.getElementById('phone-access');
+  const warning = document.getElementById('phone-access-warning');
+  const host = location.hostname;
+  const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+  if (localHosts.has(host)) {
+    warning.querySelector('[data-role=warn-host]').textContent = location.host;
+    warning.hidden = false;
+    return;
+  }
+  const url = location.origin;
+  const qr = qrcode(0, 'M');
+  qr.addData(url);
+  qr.make();
+  panel.querySelector('[data-role=qr]').innerHTML = qr.createSvgTag({
+    cellSize: 4, margin: 2, scalable: true,
+  });
+  panel.hidden = false;
 }
 
 function updateCurlExamples(token) {

@@ -72,6 +72,17 @@
 
   <template id="tpl-settings">
     <section class="settings">
+      <h2>Phone access</h2>
+      <div id="phone-access" class="phone-access" hidden>
+        <div class="qr" data-role="qr"></div>
+      </div>
+      <p id="phone-access-warning" class="hint warning" hidden>
+        You opened this at <code data-role="warn-host"></code>, which only
+        works on this computer. Re-launch via the desktop shortcut
+        (<code>open-clipsync.bat</code>) so the URL uses your LAN IP — then
+        the QR code here will be scannable from your phone.
+      </p>
+
       <h2>Settings</h2>
       <form id="settings-form">
         <label>History size (items)
@@ -127,6 +138,7 @@
     </li>
   </template>
 
+  <script src="/vendor/qrcode.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
